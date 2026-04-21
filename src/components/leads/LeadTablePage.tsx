@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, X, ExternalLink, ChevronUp, ChevronDown, Database, Download, Square, CheckSquare } from 'lucide-react';
 import { useAgenciasBase, useExportAgencias, useLeads, useUpdateLead } from '../../api/leads';
 import { useLeadSync } from '../../hooks/useLeadSync';
@@ -10,7 +11,6 @@ import { Rating } from '../ui/Rating';
 import { Spinner } from '../ui/Spinner';
 import { Button } from '../ui/Button';
 import { IconLink } from './IconLink';
-import { LeadDetailsModal } from './LeadDetailsModal';
 import { STATUS_COLORS, LEAD_STATUSES, LEAD_SOURCES } from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
 import type { Lead, LeadStatus } from '../../types';
@@ -19,6 +19,7 @@ type SortField = 'autoId' | 'nombre' | 'provincia' | 'estado' | 'prioridad' | 'v
 type AgenciasBaseSortField = 'nombre' | 'provincia' | 'zona' | 'email' | 'telefono' | 'fuente' | 'numAnuncios' | 'nivelVolumen' | 'estado';
 
 export function LeadTablePage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [fuenteFilter, setFuenteFilter] = useState('');
@@ -33,9 +34,6 @@ export function LeadTablePage() {
   const [agenciasBaseFilterProvincia, setAgenciasBaseFilterProvincia] = useState('');
   const [agenciasBaseFilterFuente, setAgenciasBaseFilterFuente] = useState('');
   const [agenciasBaseFilterEstado, setAgenciasBaseFilterEstado] = useState('');
-
-  const [detailModalLeadId, setDetailModalLeadId] = useState<string | null>(null);
-  const [detailModalFromAgenciasBase, setDetailModalFromAgenciasBase] = useState(false);
 
   const debouncedSearch = useDebounce(search, 400);
   const debouncedAgenciasBaseSearch = useDebounce(agenciasBaseSearch, 300);
@@ -281,10 +279,7 @@ export function LeadTablePage() {
                     <tr
                       key={lead.id}
                       className={`hover:bg-primary/8 transition-all duration-200 cursor-pointer group ${idx % 2 === 1 ? 'bg-white/2' : ''}`}
-                      onClick={() => {
-                        setDetailModalLeadId(lead.id);
-                        setDetailModalFromAgenciasBase(false);
-                      }}
+                      onClick={() => navigate(`/leads/${lead.id}`)}
                     >
                       <td className="px-4 py-3 text-muted font-mono text-xs">#{lead.autoId}</td>
                       <td className="px-4 py-3">
@@ -571,26 +566,6 @@ export function LeadTablePage() {
         </div>
       )}
 
-      {/* Lead Details Modal */}
-      {detailModalLeadId && (
-        <LeadDetailsModal
-          leadId={detailModalLeadId}
-          fromAgenciasBase={detailModalFromAgenciasBase}
-          onClose={() => {
-            setDetailModalLeadId(null);
-            setDetailModalFromAgenciasBase(false);
-          }}
-          onExportClick={
-            detailModalFromAgenciasBase
-              ? () => {
-                  setSelectedAgenciasBaseIds([detailModalLeadId]);
-                  handleExportAgencias();
-                  setDetailModalLeadId(null);
-                }
-              : undefined
-          }
-        />
-      )}
     </>
   );
 }

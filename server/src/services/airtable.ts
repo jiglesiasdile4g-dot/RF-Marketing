@@ -35,10 +35,36 @@ const FIELD_TO_AIRTABLE: Record<string, string> = {
   notas: 'Notas',
   estado: 'Estado',
   agencias: 'Agencias',
+  ultimoContacto: 'Último Contacto',
+  proximoContactoPrevisto: 'Próximo Contacto Previsto',
+  resultadoOutreach: 'Resultado Outreach',
+  actividades: 'Historial Actividades',
 };
 
 function mapRecordToLead(record: Airtable.Record<Airtable.FieldSet>): Lead {
   const f = record.fields as unknown as LeadFields;
+
+  // Parse JSON fields safely
+  let resultadoOutreach;
+  let actividades;
+  try {
+    const resultadoStr = f['Resultado Outreach'];
+    if (resultadoStr) {
+      resultadoOutreach = typeof resultadoStr === 'string' ? JSON.parse(resultadoStr) : resultadoStr;
+    }
+  } catch (e) {
+    console.warn('Error parsing Resultado Outreach:', e);
+  }
+
+  try {
+    const actividadesStr = f['Historial Actividades'];
+    if (actividadesStr) {
+      actividades = typeof actividadesStr === 'string' ? JSON.parse(actividadesStr) : actividadesStr;
+    }
+  } catch (e) {
+    console.warn('Error parsing Historial Actividades:', e);
+  }
+
   return {
     id: record.id,
     autoId: (f['ID'] as number) ?? 0,
@@ -58,6 +84,10 @@ function mapRecordToLead(record: Airtable.Record<Airtable.FieldSet>): Lead {
     notas: f['Notas'] ?? '',
     estado: (f['Estado'] ?? 'Sin iniciar') as LeadStatus,
     agencias: f['Agencias'] ?? '',
+    ultimoContacto: f['Último Contacto'] as string | undefined,
+    proximoContactoPrevisto: f['Próximo Contacto Previsto'] as string | undefined,
+    resultadoOutreach,
+    actividades,
   };
 }
 

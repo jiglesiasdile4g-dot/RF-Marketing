@@ -5,6 +5,7 @@ import { useLead, useUpdateLead } from '../../api/leads';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Spinner } from '../ui/Spinner';
+import { OutreachActivityTab } from './OutreachActivityTab';
 import { STATUS_COLORS, LEAD_STATUSES } from '../../lib/constants';
 import { cn } from '../../lib/utils';
 import type { Lead, LeadStatus } from '../../types';
@@ -16,10 +17,11 @@ interface LeadDetailsModalProps {
   onClose?: () => void;
 }
 
-type TabType = 'info' | 'journey' | 'notes' | 'filters';
+type TabType = 'info' | 'journey' | 'notes' | 'outreach' | 'filters';
 
 const TABS: { id: TabType; label: string }[] = [
   { id: 'info', label: 'Información' },
+  { id: 'outreach', label: '📞 Outreach & Actividad' },
   { id: 'journey', label: 'Viaje del Lead' },
   { id: 'notes', label: 'Notas' },
   { id: 'filters', label: 'Filtros Favoritos' },
@@ -158,6 +160,13 @@ export function LeadDetailsModal({
             <InformationTab
               lead={lead}
               onStateChange={handleStateChange}
+            />
+          )}
+
+          {activeTab === 'outreach' && (
+            <OutreachActivityTab
+              lead={lead}
+              onUpdate={(updates) => updateLead.mutate({ id: lead.id, updates })}
             />
           )}
 

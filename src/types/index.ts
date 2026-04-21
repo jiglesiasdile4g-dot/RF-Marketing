@@ -15,6 +15,22 @@ export type RentalType = 'Alquiler Completo' | 'Habitaciones' | 'Temporal' | 'Va
 
 export type UserRole = 'admin' | 'comercial' | 'demo' | 'onboarding';
 
+export interface ActivityItem {
+  id: string;
+  tipo: 'llamada' | 'email' | 'reunión' | 'demo' | 'seguimiento' | 'otro';
+  fecha: string;
+  resultado: string;
+  notas: string;
+  realizadoPor?: string;
+}
+
+export interface OutreachResult {
+  tipo: 'llamada' | 'email' | 'mensaje' | 'presencial' | 'pendiente';
+  estado: 'completado' | 'pendiente' | 'fallido' | 'pospuesto';
+  fecha?: string;
+  resultado?: string;
+}
+
 export interface Lead {
   id: string;
   autoId: number;
@@ -34,6 +50,12 @@ export interface Lead {
   notas: string;
   estado: LeadStatus;
   agencias: string;
+
+  // Outreach & Actividad
+  ultimoContacto?: string;
+  proximoContactoPrevisto?: string;
+  resultadoOutreach?: OutreachResult;
+  actividades?: ActivityItem[];
 }
 
 export interface User {

@@ -21,7 +21,7 @@ type TabType = 'info' | 'journey' | 'notes' | 'outreach' | 'filters';
 
 const TABS: { id: TabType; label: string }[] = [
   { id: 'info', label: 'Información' },
-  { id: 'outreach', label: '📞 Outreach & Actividad' },
+  { id: 'outreach', label: 'Outreach & Actividad' },
   { id: 'journey', label: 'Viaje del Lead' },
   { id: 'notes', label: 'Notas' },
   { id: 'filters', label: 'Filtros Favoritos' },

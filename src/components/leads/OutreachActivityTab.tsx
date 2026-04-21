@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Phone, Mail, Calendar, CheckCircle, Clock, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
@@ -11,12 +11,12 @@ interface OutreachActivityTabProps {
 }
 
 const ACTIVITY_TYPES = [
-  { value: 'llamada', label: '📞 Llamada', icon: Phone },
-  { value: 'email', label: '📧 Email', icon: Mail },
-  { value: 'reunión', label: '👥 Reunión', icon: Calendar },
-  { value: 'demo', label: '🎬 Demo', icon: Calendar },
-  { value: 'seguimiento', label: '📋 Seguimiento', icon: Clock },
-  { value: 'otro', label: '✓ Otro', icon: CheckCircle },
+  { value: 'llamada', label: 'Llamada' },
+  { value: 'email', label: 'Email' },
+  { value: 'reunión', label: 'Reunión' },
+  { value: 'demo', label: 'Demo' },
+  { value: 'seguimiento', label: 'Seguimiento' },
+  { value: 'otro', label: 'Otro' },
 ];
 
 const OUTREACH_TYPES = [
@@ -28,10 +28,10 @@ const OUTREACH_TYPES = [
 ];
 
 const OUTREACH_STATES = [
-  { value: 'completado', label: '✓ Completado', color: '#10b981' },
-  { value: 'pendiente', label: '⏳ Pendiente', color: '#f59e0b' },
-  { value: 'fallido', label: '✗ Fallido', color: '#ef4444' },
-  { value: 'pospuesto', label: '↻ Pospuesto', color: '#6b7280' },
+  { value: 'completado', label: 'Completado', color: '#10b981' },
+  { value: 'pendiente', label: 'Pendiente', color: '#f59e0b' },
+  { value: 'fallido', label: 'Fallido', color: '#ef4444' },
+  { value: 'pospuesto', label: 'Pospuesto', color: '#6b7280' },
 ];
 
 export function OutreachActivityTab({ lead, onUpdate }: OutreachActivityTabProps) {
@@ -162,9 +162,8 @@ export function OutreachActivityTab({ lead, onUpdate }: OutreachActivityTabProps
             />
           </div>
           {lead.proximoContactoPrevisto && (
-            <div className="flex items-center gap-2 text-sm text-secondary">
-              <Calendar size={16} />
-              <span>{new Date(lead.proximoContactoPrevisto).toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' })}</span>
+            <div className="text-sm text-secondary font-medium pt-1">
+              {new Date(lead.proximoContactoPrevisto).toLocaleDateString('es-ES', { weekday: 'long', month: 'long', day: 'numeric' })}
             </div>
           )}
         </div>
@@ -254,10 +253,9 @@ export function OutreachActivityTab({ lead, onUpdate }: OutreachActivityTabProps
                     )}
                   </div>
                   <p className="text-xs text-muted">{activity.notas}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-dim pt-1">
-                    <Calendar size={12} />
+                  <div className="text-xs text-muted-dim pt-1">
                     {new Date(activity.fecha).toLocaleDateString('es-ES')}
-                    {activity.realizadoPor && <span>• {activity.realizadoPor}</span>}
+                    {activity.realizadoPor && <span> • {activity.realizadoPor}</span>}
                   </div>
                 </div>
                 <button
@@ -271,7 +269,6 @@ export function OutreachActivityTab({ lead, onUpdate }: OutreachActivityTabProps
           </div>
         ) : (
           <div className="glass-card p-6 text-center text-muted">
-            <AlertCircle size={24} className="mx-auto mb-2 opacity-40" />
             <p className="text-sm">Sin actividades registradas</p>
           </div>
         )}
@@ -280,11 +277,8 @@ export function OutreachActivityTab({ lead, onUpdate }: OutreachActivityTabProps
       {/* Último Contacto */}
       {lead.ultimoContacto && (
         <section className="glass-card p-4 bg-secondary/10 border border-secondary/30">
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle size={16} className="text-secondary" />
-            <span className="text-secondary font-medium">
-              Último contacto: {new Date(lead.ultimoContacto).toLocaleDateString('es-ES')}
-            </span>
+          <div className="text-sm text-secondary font-medium">
+            Último contacto: {new Date(lead.ultimoContacto).toLocaleDateString('es-ES')}
           </div>
         </section>
       )}

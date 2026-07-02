@@ -4,6 +4,7 @@ import {
   TableProperties,
   Kanban,
   BarChart3,
+  FileText,
   UserCog,
   Rocket,
   ChevronLeft,
@@ -19,6 +20,7 @@ const navItems = [
   { to: '/leads', icon: TableProperties, label: 'Leads', roles: ['admin', 'comercial', 'demo', 'onboarding'] },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline', roles: ['admin', 'comercial', 'demo', 'onboarding'] },
   { to: '/stats', icon: BarChart3, label: 'Estadísticas', roles: ['admin', 'comercial', 'demo', 'onboarding'] },
+  { to: '/copys', icon: FileText, label: 'Copys', roles: ['admin', 'comercial'] },
   { to: '/onboarding', icon: Rocket, label: 'Onboarding', roles: ['admin', 'onboarding'] },
   { to: '/users', icon: UserCog, label: 'Usuarios', roles: ['admin'] },
 ] as const;

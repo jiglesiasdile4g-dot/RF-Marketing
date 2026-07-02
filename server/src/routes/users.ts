@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireRole } from '../middleware/auth.js';
-import { getUsers, createUser, updateUser, deleteUser } from '../services/airtable.js';
+import { getUsers, createUser, updateUser, deleteUser } from '../services/sheets.js';
 import { hashPassword } from '../utils/password.js';
 
 const router = Router();
@@ -43,7 +43,7 @@ router.post('/', requireRole('admin'), async (req, res) => {
     res.status(201).json(user);
   } catch (err) {
     if (err instanceof z.ZodError) {
-      res.status(400).json({ error: 'Datos inválidos', details: err.errors });
+      res.status(400).json({ error: 'Datos inválidos', details: err.issues });
       return;
     }
     console.error('Error creating user:', err);
@@ -61,11 +61,11 @@ router.patch('/:id', requireRole('admin'), async (req, res) => {
     if (data.role) updates.role = data.role;
     if (data.password) updates.passwordHash = await hashPassword(data.password);
 
-    await updateUser(req.params.id, updates);
+    await updateUser(String(req.params.id), updates);
     res.json({ success: true });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      res.status(400).json({ error: 'Datos inválidos', details: err.errors });
+      res.status(400).json({ error: 'Datos inválidos', details: err.issues });
       return;
     }
     console.error('Error updating user:', err);
@@ -75,7 +75,7 @@ router.patch('/:id', requireRole('admin'), async (req, res) => {
 
 router.delete('/:id', requireRole('admin'), async (req, res) => {
   try {
-    await deleteUser(req.params.id);
+    await deleteUser(String(req.params.id));
     res.json({ success: true });
   } catch (err) {
     console.error('Error deleting user:', err);

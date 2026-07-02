@@ -1,6 +1,8 @@
 export type LeadStatus =
   | 'Sin iniciar'
   | 'Contactado'
+  | 'Contactado 1'
+  | 'Contactado 2'
   | 'Responde'
   | 'No responde'
   | 'Llamada breve agendada'
@@ -24,14 +26,36 @@ export interface ActivityItem {
   realizadoPor?: string;
 }
 
-export interface OutreachResult {
-  tipo: 'llamada' | 'email' | 'mensaje' | 'presencial' | 'pendiente';
-  estado: 'completado' | 'pendiente' | 'fallido' | 'pospuesto';
-  fecha?: string;
-  resultado?: string;
+export interface Copy {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  asuntoEmail: string;
+  cuerpoEmail: string;
+  angulo: string;
+  tipo: string;
+  objetivo: string;
+  conversionRate: number | null;
+  notas: string;
+}
+
+export interface HistorialEntry {
+  id: string;
+  idag: string;
+  nombreAgencia: string;
+  email: string;
+  nombreCopy: string;
+  asuntoEmail: string;
+  cuerpoEmail: string;
+  tipo: string;
+  angulo: string;
+  objetivo: string;
+  fechaEnvio: string;
+  fechaEnvioIso: string | null;
 }
 
 export interface Lead {
+  // id = valor de la columna `idag` de la hoja de Google Sheets
   id: string;
   autoId: number;
   nombre: string;
@@ -51,10 +75,8 @@ export interface Lead {
   estado: LeadStatus;
   agencias: string;
 
-  // Outreach & Actividad
+  // Derivados de la pestaña Historial (solo en detalle de lead)
   ultimoContacto?: string;
-  proximoContactoPrevisto?: string;
-  resultadoOutreach?: OutreachResult;
   actividades?: ActivityItem[];
 }
 

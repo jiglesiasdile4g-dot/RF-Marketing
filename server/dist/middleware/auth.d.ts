@@ -7,5 +7,5 @@ declare global {
         }
     }
 }
-export declare function authMiddleware(_req: Request, _res: Response, next: NextFunction): void;
+export declare function authMiddleware(req: Request, res: Response, next: NextFunction): void;
 export declare function requireRole(...roles: UserRole[]): (req: Request, res: Response, next: NextFunction) => void;

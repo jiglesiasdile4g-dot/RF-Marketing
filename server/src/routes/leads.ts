@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { exportAgenciasFromBase, getAgenciasBase, getLeads, getLead, updateLead } from '../services/airtable.js';
+import { exportAgenciasFromBase, getAgenciasBase, getLeads, getLead, getHistorial, updateLead } from '../services/sheets.js';
 
 const router = Router();
 
@@ -49,6 +49,16 @@ router.post('/export-agencias', async (req, res) => {
   } catch (err) {
     console.error('Error exporting agencias:', err);
     res.status(500).json({ error: 'Error al exportar agencias' });
+  }
+});
+
+router.get('/:id/historial', async (req, res) => {
+  try {
+    const entries = await getHistorial(req.params.id);
+    res.json(entries);
+  } catch (err) {
+    console.error('Error fetching historial:', err);
+    res.status(500).json({ error: 'Error al obtener historial' });
   }
 });
 

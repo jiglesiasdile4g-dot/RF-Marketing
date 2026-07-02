@@ -4,7 +4,7 @@ import {
   ArrowLeft, Phone, Mail, Globe, ExternalLink, Edit3, Save, X,
   MapPin, Building2, Calendar, FileText,
 } from 'lucide-react';
-import { useLead, useUpdateLead } from '../../api/leads';
+import { useLead, useLeadHistorial, useUpdateLead } from '../../api/leads';
 import { useRoleGuard } from '../../hooks/useRoleGuard';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -13,7 +13,7 @@ import { Spinner } from '../ui/Spinner';
 import { Card } from '../ui/Card';
 import { STATUS_COLORS, LEAD_STATUSES } from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
-import type { LeadStatus } from '../../types';
+import type { HistorialEntry, LeadStatus } from '../../types';
 
 export function LeadDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -150,6 +150,9 @@ export function LeadDetailPage() {
               </p>
             )}
           </Card>
+
+          {/* Historial de contacto (envíos registrados por n8n) */}
+          <HistorialCard leadId={lead.id} />
         </div>
 
         {/* Right panel */}
@@ -246,6 +249,74 @@ export function LeadDetailPage() {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HistorialCard({ leadId }: { leadId: string }) {
+  const { data: entries, isLoading } = useLeadHistorial(leadId);
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-white">Historial de contacto</h3>
+        {entries && entries.length > 0 && entries[0].fechaEnvioIso && (
+          <span className="text-xs text-muted">
+            Último contacto: {formatDate(entries[0].fechaEnvioIso)}
+          </span>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Spinner size={20} />
+        </div>
+      ) : !entries || entries.length === 0 ? (
+        <p className="text-sm text-muted">Sin envíos registrados.</p>
+      ) : (
+        <div className="space-y-3">
+          {entries.map((entry) => (
+            <HistorialItem key={entry.id} entry={entry} />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function HistorialItem({ entry }: { entry: HistorialEntry }) {
+  const [expanded, setExpanded] = useState(false);
+  const meta = [entry.tipo, entry.angulo, entry.objetivo].filter(Boolean).join(' · ');
+
+  return (
+    <div className="rounded-xl bg-surface-700 border border-border px-4 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-white truncate">{entry.asuntoEmail || 'Sin asunto'}</p>
+          <p className="text-xs text-muted mt-0.5">
+            {entry.nombreCopy}
+            {meta ? ` — ${meta}` : ''}
+          </p>
+        </div>
+        <span className="text-xs text-muted shrink-0">
+          {entry.fechaEnvioIso ? formatDate(entry.fechaEnvioIso) : entry.fechaEnvio || '—'}
+        </span>
+      </div>
+      {entry.cuerpoEmail && (
+        <div className="mt-2">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="text-xs text-primary hover:text-primary-hover transition-colors cursor-pointer"
+          >
+            {expanded ? 'Ocultar email' : 'Ver email'}
+          </button>
+          {expanded && (
+            <p className="text-xs text-muted whitespace-pre-wrap mt-2 border-t border-border pt-2">
+              {entry.cuerpoEmail}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

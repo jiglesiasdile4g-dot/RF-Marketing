@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLeads } from '../services/airtable.js';
+import { getLeads } from '../services/sheets.js';
 import type { LeadStatus } from '../types/index.js';
 
 const router = Router();
@@ -7,6 +7,8 @@ const router = Router();
 const PIPELINE_ORDER: LeadStatus[] = [
   'Sin iniciar',
   'Contactado',
+  'Contactado 1',
+  'Contactado 2',
   'Responde',
   'No responde',
   'Llamada breve agendada',
@@ -19,6 +21,8 @@ const PIPELINE_ORDER: LeadStatus[] = [
 const STATUS_COLORS: Record<LeadStatus, string> = {
   'Sin iniciar': '#6b7280',
   'Contactado': '#3b82f6',
+  'Contactado 1': '#2563eb',
+  'Contactado 2': '#1d4ed8',
   'Responde': '#06b6d4',
   'No responde': '#f97316',
   'Llamada breve agendada': '#7c3aed',

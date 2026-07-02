@@ -2,14 +2,11 @@
  * Script para crear el primer usuario administrador.
  * Uso: npx tsx src/scripts/createAdmin.ts
  *
- * IMPORTANTE: La tabla USUARIOS debe existir en Airtable con los campos:
- *   - Email (Single line text)
- *   - PasswordHash (Long text)
- *   - Nombre (Single line text)
- *   - Role (Single line text)
+ * La pestaña "Usuarios" de la hoja de Google Sheets se crea automáticamente
+ * si no existe (con las columnas ID, Email, PasswordHash, Nombre, Role).
  */
 import 'dotenv/config';
-import { createUser, getUserByEmail, deleteUser } from '../services/airtable.js';
+import { createUser, getUserByEmail, deleteUser } from '../services/sheets.js';
 import { hashPassword } from '../utils/password.js';
 
 const ADMIN_EMAIL = 'admin@rentaflow.es';

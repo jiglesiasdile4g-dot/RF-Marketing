@@ -1,6 +1,8 @@
 export type LeadStatus =
   | 'Sin iniciar'
   | 'Contactado'
+  | 'Contactado 1'
+  | 'Contactado 2'
   | 'Responde'
   | 'No responde'
   | 'Llamada breve agendada'
@@ -13,27 +15,17 @@ export type LeadSource = 'Idealista' | 'Google Maps' | 'Pisos.com' | 'Presencial
 export type RentalType = 'Alquiler Completo' | 'Habitaciones' | 'Temporal' | 'Vacacional';
 export type UserRole = 'admin' | 'comercial' | 'demo' | 'onboarding';
 
-export interface LeadFields {
-  'Nombre agencia'?: string;
-  'Provincia'?: string;
-  'Zona'?: string;
-  'Fuente'?: LeadSource;
-  'Tipo alquiler'?: RentalType[];
-  'Nº anuncios activos'?: string;
-  'Nivel volumen'?: string;
-  'Email'?: string;
-  'Teléfono'?: string;
-  'Web'?: string;
-  'Perfil Idealista'?: string;
-  'Validado'?: string;
-  'Prioridad'?: number;
-  'Notas'?: string;
-  'Estado'?: LeadStatus;
-  'Agencias'?: string;
-  'ID'?: number;
+export interface ActivityItem {
+  id: string;
+  tipo: 'llamada' | 'email' | 'reunión' | 'demo' | 'seguimiento' | 'otro';
+  fecha: string;
+  resultado: string;
+  notas: string;
+  realizadoPor?: string;
 }
 
 export interface Lead {
+  // id = valor de la columna `idag` (pestaña Agencias) o `ID` (Agencias BASE)
   id: string;
   autoId: number;
   nombre: string;
@@ -52,13 +44,38 @@ export interface Lead {
   notas: string;
   estado: LeadStatus;
   agencias: string;
+
+  // Derivados de la pestaña Historial (solo en getLead)
+  ultimoContacto?: string;
+  actividades?: ActivityItem[];
 }
 
-export interface UserFields {
-  'Email': string;
-  'PasswordHash': string;
-  'Nombre': string;
-  'Role': UserRole;
+export interface Copy {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  asuntoEmail: string;
+  cuerpoEmail: string;
+  angulo: string;
+  tipo: string;
+  objetivo: string;
+  conversionRate: number | null;
+  notas: string;
+}
+
+export interface HistorialEntry {
+  id: string;
+  idag: string;
+  nombreAgencia: string;
+  email: string;
+  nombreCopy: string;
+  asuntoEmail: string;
+  cuerpoEmail: string;
+  tipo: string;
+  angulo: string;
+  objetivo: string;
+  fechaEnvio: string;
+  fechaEnvioIso: string | null;
 }
 
 export interface JwtPayload {

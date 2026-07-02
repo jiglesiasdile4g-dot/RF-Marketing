@@ -6,14 +6,16 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "create-admin": "tsx src/scripts/createAdmin.ts"
+    "create-admin": "tsx src/scripts/createAdmin.ts",
+    "get-refresh-token": "tsx src/scripts/getRefreshToken.ts"
   },
   "dependencies": {
-    "airtable": "^0.12.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "googleapis": "^144.0.0",
     "express-rate-limit": "^8.3.2",
     "jsonwebtoken": "^9.0.3",
     "node-cache": "^5.1.2",

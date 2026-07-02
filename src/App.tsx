@@ -7,6 +7,7 @@ import { LeadTablePage } from './components/leads/LeadTablePage';
 import { LeadDetailPage } from './components/leads/LeadDetailPage';
 import { PipelinePage } from './components/pipeline/PipelinePage';
 import { StatsPage } from './components/stats/StatsPage';
+import { CopysPage } from './components/copys/CopysPage';
 import { OnboardingPage } from './components/onboarding/OnboardingPage';
 import { UserManagementPage } from './components/users/UserManagementPage';
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/leads/:id" element={<LeadDetailPage />} />
             <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/stats" element={<StatsPage />} />
+            <Route path="/copys" element={<CopysPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/users" element={<UserManagementPage />} />
           </Route>

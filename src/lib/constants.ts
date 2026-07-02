@@ -3,6 +3,8 @@ import type { LeadStatus, LeadSource, UserRole } from '../types';
 export const LEAD_STATUSES: LeadStatus[] = [
   'Sin iniciar',
   'Contactado',
+  'Contactado 1',
+  'Contactado 2',
   'Responde',
   'No responde',
   'Llamada breve agendada',
@@ -30,6 +32,8 @@ export const RENTAL_TYPES = [
 export const STATUS_COLORS: Record<LeadStatus, string> = {
   'Sin iniciar': '#6b7280',
   'Contactado': '#3b82f6',
+  'Contactado 1': '#2563eb',
+  'Contactado 2': '#1d4ed8',
   'Responde': '#06b6d4',
   'No responde': '#f97316',
   'Llamada breve agendada': '#7c3aed',
@@ -42,18 +46,22 @@ export const STATUS_COLORS: Record<LeadStatus, string> = {
 export const STATUS_ORDER: Record<LeadStatus, number> = {
   'Sin iniciar': 0,
   'Contactado': 1,
-  'Responde': 2,
-  'No responde': 3,
-  'Llamada breve agendada': 4,
-  'Reunión agendada': 5,
-  'Demo realizada': 6,
-  'Cliente cerrado': 7,
-  'No interesado': 8,
+  'Contactado 1': 2,
+  'Contactado 2': 3,
+  'Responde': 4,
+  'No responde': 5,
+  'Llamada breve agendada': 6,
+  'Reunión agendada': 7,
+  'Demo realizada': 8,
+  'Cliente cerrado': 9,
+  'No interesado': 10,
 };
 
 export const PIPELINE_STATUSES: LeadStatus[] = [
   'Sin iniciar',
   'Contactado',
+  'Contactado 1',
+  'Contactado 2',
   'Responde',
   'No responde',
   'Llamada breve agendada',
@@ -66,7 +74,7 @@ export const PIPELINE_STATUSES: LeadStatus[] = [
 // Stages each role can manage
 export const ROLE_STAGES: Record<UserRole, LeadStatus[]> = {
   admin: LEAD_STATUSES,
-  comercial: ['Sin iniciar', 'Contactado', 'Responde', 'No responde', 'Llamada breve agendada'],
+  comercial: ['Sin iniciar', 'Contactado', 'Contactado 1', 'Contactado 2', 'Responde', 'No responde', 'Llamada breve agendada'],
   demo: ['Reunión agendada', 'Demo realizada', 'Cliente cerrado'],
   onboarding: ['Cliente cerrado'],
 };
@@ -74,7 +82,7 @@ export const ROLE_STAGES: Record<UserRole, LeadStatus[]> = {
 // Stages each role can transition leads INTO
 export const ROLE_TRANSITIONS: Record<UserRole, LeadStatus[]> = {
   admin: LEAD_STATUSES,
-  comercial: ['Sin iniciar', 'Contactado', 'Responde', 'No responde', 'Llamada breve agendada', 'No interesado'],
+  comercial: ['Sin iniciar', 'Contactado', 'Contactado 1', 'Contactado 2', 'Responde', 'No responde', 'Llamada breve agendada', 'No interesado'],
   demo: ['Reunión agendada', 'Demo realizada', 'Cliente cerrado', 'No interesado'],
   onboarding: ['Cliente cerrado'],
 };

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from './client';
-import type { Lead } from '../types';
+import type { HistorialEntry, Lead } from '../types';
 
 interface LeadFilters {
   status?: string;
@@ -36,6 +36,17 @@ export function useLead(id: string | undefined) {
     queryKey: ['lead', id],
     queryFn: async () => {
       const { data } = await apiClient.get<Lead>(`/leads/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useLeadHistorial(id: string | undefined) {
+  return useQuery({
+    queryKey: ['lead-historial', id],
+    queryFn: async () => {
+      const { data } = await apiClient.get<HistorialEntry[]>(`/leads/${id}/historial`);
       return data;
     },
     enabled: !!id,

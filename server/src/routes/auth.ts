@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { getUserByEmail } from '../services/airtable.js';
+import { getUserByEmail } from '../services/sheets.js';
 import { comparePassword } from '../utils/password.js';
 import { signToken } from '../utils/jwt.js';
 
@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      res.status(400).json({ error: 'Datos inválidos', details: err.errors });
+      res.status(400).json({ error: 'Datos inválidos', details: err.issues });
       return;
     }
     console.error('Login error:', err);

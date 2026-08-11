@@ -2,15 +2,15 @@
 
 FROM node:20-alpine AS build-client
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
 FROM node:20-alpine AS build-server
 WORKDIR /app/server
-COPY server/package.json server/package-lock.json ./
-RUN npm ci
+COPY server/package.json server/package-lock.json* ./
+RUN npm install --no-audit --no-fund
 COPY server/ ./
 RUN npm run build
 
@@ -23,11 +23,11 @@ ENV PORT=3006
 COPY --from=build-client /app/dist ./dist
 COPY --from=build-server /app/server/dist ./server/dist
 
-COPY package.json package-lock.json ./
-COPY server/package.json server/package-lock.json ./server/
+COPY package.json package-lock.json* ./
+COPY server/package.json server/package-lock.json* ./server/
 
-RUN npm ci --omit=dev && npm cache clean --force
-RUN cd server && npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
+RUN cd server && npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 
 EXPOSE 3006
 

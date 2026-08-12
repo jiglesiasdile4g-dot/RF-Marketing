@@ -57,6 +57,84 @@ export const STATUS_ORDER: Record<LeadStatus, number> = {
   'No interesado': 10,
 };
 
+// ---------------------------------------------------------------------------
+// Helpers para normalizar estados (Lead.estado` proveniente de Google Sheets.
+// La hoja admite strings libres: typos, espacios, mayúsculas distintas, etc.
+// Siempre devolvemos un valor seguro para no romper Badge/colores.
+// ---------------------------------------------------------------------------
+
+const STATUS_NORMALIZATION_MAP: Record<string, LeadStatus> = /*#__PURE__*/ (() => {
+  const map: Record<string, LeadStatus> = {};
+  for (const s of LEAD_STATUSES) {
+    const key = s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    map[key] = s;
+  }
+  return map;
+})();
+
+const FALLBACK_COLOR = '#6b7280';
+
+/**
+ * Dado un string crudo de Sheets, intenta casarlo con un LeadStatus conocido.
+ * Acepta diferencias de mayúsculas, tildes, espacios múltiples/sobrantes y
+ * números romanos/arabigos (ej: "Contactado   1 " → "Contactado 1").
+ * Si no reconoce el valor devuelve null.
+ */
+export function resolveLeadStatus(raw: string | null | undefined): LeadStatus | null {
+  if (!raw) return null;
+  const base = String(raw)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s*-\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    // "Contactado1" → "Contactado 1"
+    .replace(/([a-zñ])\s*(\d)\b/gi, '$1 $2');
+  if (STATUS_NORMALIZATION_MAP[base]) return STATUS_NORMALIZATION_MAP[base];
+
+  // Segunda oportunidad: números romanos y variantes
+  for (const s of LEAD_STATUSES) {
+    const canon = s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (canon === base || canon.includes(base) || base.includes(canon)) {
+      return s;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Devuelve el color hex para un estado. Acepta strings crudos (con typos/espacios)
+ * y devuelve gris neutro si no reconoce el valor. Nunca undefined.
+ */
+export function getLeadStatusColor(estado: string | null | undefined): string {
+  const known = resolveLeadStatus(estado);
+  if (known) return STATUS_COLORS[known];
+  return FALLBACK_COLOR;
+}
+
+/**
+ * Devuelve la etiqueta "canónica" para mostrar en la UI.
+ * Si el string de Sheets no se reconoce, devolvemos el valor canónico; si no,
+ * el string crudo (para que nunca se pierda el texto).
+ */
+export function getLeadStatusLabel(estado: string | null | undefined): string {
+  if (!estado) return '';
+  const known = resolveLeadStatus(estado);
+  return known ?? String(estado);
+}
+
 export const PIPELINE_STATUSES: LeadStatus[] = [
   'Sin iniciar',
   'Contactado',

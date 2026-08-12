@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, X, ExternalLink, ChevronUp, ChevronDown, Database, Download, Square, CheckSquare } from 'lucide-react';
 import { useAgenciasBase, useExportAgencias, useLeads, useUpdateLead } from '../../api/leads';
@@ -11,7 +11,13 @@ import { Rating } from '../ui/Rating';
 import { Spinner } from '../ui/Spinner';
 import { Button } from '../ui/Button';
 import { IconLink } from './IconLink';
-import { STATUS_COLORS, LEAD_STATUSES, LEAD_SOURCES } from '../../lib/constants';
+import {
+  LEAD_STATUSES,
+  LEAD_SOURCES,
+  getLeadStatusColor,
+  getLeadStatusLabel,
+  resolveLeadStatus,
+} from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
 import type { Lead, LeadStatus } from '../../types';
 
@@ -25,6 +31,43 @@ export function LeadTablePage() {
   const [fuenteFilter, setFuenteFilter] = useState('');
   const [sort, setSort] = useState<{ field: SortField; dir: 'asc' | 'desc' }>({ field: 'autoId', dir: 'desc' });
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
+  const activeStatusCellNode = useRef<HTMLElement | null>(null);
+
+  // Callback-ref: guardamos el nodo del <td> ESTADO de la FILA ACTIVA (editingCell.id).
+  // Se re-asigna automáticamente al re-renderizar según qué celda esté en edición.
+  const setActiveStatusCellRef = (rowId: string) => (el: HTMLElement | null) => {
+    if (editingCell?.field === 'estado' && editingCell.id === rowId && el) {
+      activeStatusCellNode.current = el;
+    }
+  };
+
+  // Cierra el selector inline de ESTADO cuando el usuario hace click FUERA de la
+  // celda activa (o pulsa Escape). NO usamos onBlur del <select> nativo porque
+  // su overlay dispara blur en el momento de abrirse y provoca el cierre inmediato.
+  useEffect(() => {
+    if (!editingCell || editingCell.field !== 'estado') {
+      activeStatusCellNode.current = null;
+      return;
+    }
+
+    const handleDocMouseDown = (ev: MouseEvent) => {
+      const cell = activeStatusCellNode.current;
+      if (cell && !cell.contains(ev.target as Node)) {
+        setEditingCell(null);
+      }
+    };
+
+    const handleKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setEditingCell(null);
+    };
+
+    document.addEventListener('mousedown', handleDocMouseDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleDocMouseDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editingCell]);
 
   const [isAgenciasBaseModalOpen, setIsAgenciasBaseModalOpen] = useState(false);
   const [agenciasBaseSearch, setAgenciasBaseSearch] = useState('');
@@ -72,7 +115,10 @@ export function LeadTablePage() {
     const filtered = agenciasBase.filter((lead) => {
       const matchesProvincia = !agenciasBaseFilterProvincia || lead.provincia === agenciasBaseFilterProvincia;
       const matchesFuente = !agenciasBaseFilterFuente || lead.fuente === agenciasBaseFilterFuente;
-      const matchesEstado = !agenciasBaseFilterEstado || lead.estado === agenciasBaseFilterEstado;
+      const matchesEstado =
+        !agenciasBaseFilterEstado ||
+        resolveLeadStatus(lead.estado) === resolveLeadStatus(agenciasBaseFilterEstado) ||
+        (lead.estado || '') === (agenciasBaseFilterEstado || '');
       return matchesProvincia && matchesFuente && matchesEstado;
     });
 
@@ -107,6 +153,13 @@ export function LeadTablePage() {
     if (!canEditLead(lead.estado) || !canTransitionTo(newStatus)) return;
     updateLead.mutate({ id: lead.id, updates: { estado: newStatus } });
     setEditingCell(null);
+  };
+
+  // Interpreta el valor del select (string) → LeadStatus canónico. Permite que,
+  // aunque un estado de Sheets no coincida exactamente, el select se posicione
+  // en la opción canónica al renderizarse (no haya "sin valor" por el string).
+  const resolveSelectedValue = (estado: string): string => {
+    return resolveLeadStatus(estado) ?? String(estado);
   };
 
   const handlePriorityChange = (lead: Lead, value: number) => {
@@ -290,6 +343,7 @@ export function LeadTablePage() {
                       </td>
                       <td className="px-4 py-3 text-muted">{lead.provincia || '-'}</td>
                       <td
+                        ref={setActiveStatusCellRef(lead.id) as any}
                         className="px-4 py-3"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -304,11 +358,14 @@ export function LeadTablePage() {
                       >
                         {editingCell?.id === lead.id && editingCell?.field === 'estado' ? (
                           <select
-                            autoFocus
-                            className="bg-surface-600 border border-primary rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
-                            value={lead.estado}
+                            className="bg-surface-600 border border-primary rounded-lg px-2 py-1 text-xs text-white focus:outline-none w-full cursor-pointer"
+                            value={resolveSelectedValue(lead.estado)}
                             onChange={(e) => handleStatusChange(lead, e.target.value as LeadStatus)}
-                            onBlur={() => setEditingCell(null)}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') (e.target as HTMLSelectElement).blur();
+                            }}
                           >
                             {LEAD_STATUSES.filter((s) => canTransitionTo(s)).map((s) => (
                               <option key={s} value={s}>
@@ -317,7 +374,9 @@ export function LeadTablePage() {
                             ))}
                           </select>
                         ) : (
-                          <Badge color={STATUS_COLORS[lead.estado]}>{lead.estado}</Badge>
+                          <Badge color={getLeadStatusColor(lead.estado)}>
+                            {getLeadStatusLabel(lead.estado)}
+                          </Badge>
                         )}
                       </td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>

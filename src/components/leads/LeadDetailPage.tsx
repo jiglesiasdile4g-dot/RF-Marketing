@@ -11,7 +11,12 @@ import { Button } from '../ui/Button';
 import { Rating } from '../ui/Rating';
 import { Spinner } from '../ui/Spinner';
 import { Card } from '../ui/Card';
-import { STATUS_COLORS, LEAD_STATUSES } from '../../lib/constants';
+import {
+  LEAD_STATUSES,
+  getLeadStatusColor,
+  getLeadStatusLabel,
+  resolveLeadStatus,
+} from '../../lib/constants';
 import { formatDate } from '../../lib/utils';
 import type { HistorialEntry, LeadStatus } from '../../types';
 
@@ -76,7 +81,7 @@ export function LeadDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           <Rating value={lead.prioridad} onChange={canEdit ? handlePriority : undefined} size={18} />
-          <Badge color={STATUS_COLORS[lead.estado]}>{lead.estado}</Badge>
+          <Badge color={getLeadStatusColor(lead.estado)}>{getLeadStatusLabel(lead.estado)}</Badge>
         </div>
       </div>
 
@@ -162,8 +167,12 @@ export function LeadDetailPage() {
             <h3 className="text-sm font-semibold text-white mb-4">Estado del lead</h3>
             <div className="space-y-1.5">
               {LEAD_STATUSES.map((status) => {
-                const isCurrent = lead.estado === status;
+                // Marca "Actual" si el estado del lead (normalizado) coincide con el botón.
+                const isCurrent =
+                  status === (resolveLeadStatus(lead.estado) ?? String(lead.estado));
                 const canGoTo = canTransitionTo(status);
+                const color = getLeadStatusColor(status);
+                const label = getLeadStatusLabel(status);
                 return (
                   <button
                     key={status}
@@ -177,16 +186,16 @@ export function LeadDetailPage() {
                         : 'text-muted/40 cursor-not-allowed'
                     }`}
                     style={isCurrent ? {
-                      backgroundColor: `${STATUS_COLORS[status]}18`,
-                      border: `1px solid ${STATUS_COLORS[status]}40`,
+                      backgroundColor: `${color}18`,
+                      border: `1px solid ${color}40`,
                     } : undefined}
                   >
                     <div className="flex items-center gap-2">
                       <div
                         className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: STATUS_COLORS[status] }}
+                        style={{ backgroundColor: color }}
                       />
-                      {status}
+                      {label}
                       {isCurrent && <span className="ml-auto text-[10px] opacity-70">Actual</span>}
                     </div>
                   </button>

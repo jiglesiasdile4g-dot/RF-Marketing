@@ -1,7 +1,7 @@
 import { useKpis, useFunnel, useBySource, useByProvince } from '../../api/stats';
 import { Card } from '../ui/Card';
 import { Spinner } from '../ui/Spinner';
-import { STATUS_COLORS } from '../../lib/constants';
+import { getLeadStatusColor, getLeadStatusLabel } from '../../lib/constants';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
@@ -41,10 +41,12 @@ export function StatsPage() {
 
   const funnelFiltered = funnel?.filter((f) => f.count > 0) ?? [];
 
-  // Build conversion funnel data with percentages
+  // Build conversion funnel data with percentages (normaliza etiquetas/colores)
   const totalLeads = kpis?.totalLeads ?? 0;
   const conversionData = funnelFiltered.map((f) => ({
     ...f,
+    status: getLeadStatusLabel(f.status),
+    color: getLeadStatusColor(f.status),
     pct: totalLeads > 0 ? Math.round((f.count / totalLeads) * 100) : 0,
   }));
 
@@ -52,25 +54,29 @@ export function StatsPage() {
     <div className="space-y-6 animate-fade-in">
       {/* Summary row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis && Object.entries(kpis.byStatus).map(([status, count]) => (
-          <div
-            key={status}
-            className="glass-card p-4"
-            style={{ borderColor: `${STATUS_COLORS[status as keyof typeof STATUS_COLORS]}30` }}
-          >
-            <p className="text-2xl font-bold text-white">{count}</p>
-            <p className="text-xs text-muted mt-1">{status}</p>
-            <div className="mt-2 h-1 rounded-full bg-surface-600">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: totalLeads > 0 ? `${(count / totalLeads) * 100}%` : '0%',
-                  backgroundColor: STATUS_COLORS[status as keyof typeof STATUS_COLORS],
-                }}
-              />
+        {kpis && Object.entries(kpis.byStatus).map(([rawStatus, count]) => {
+          const color = getLeadStatusColor(rawStatus);
+          const label = getLeadStatusLabel(rawStatus);
+          return (
+            <div
+              key={rawStatus}
+              className="glass-card p-4"
+              style={{ borderColor: `${color}30` }}
+            >
+              <p className="text-2xl font-bold text-white">{count}</p>
+              <p className="text-xs text-muted mt-1">{label}</p>
+              <div className="mt-2 h-1 rounded-full bg-surface-600">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: totalLeads > 0 ? `${(count / totalLeads) * 100}%` : '0%',
+                    backgroundColor: color,
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

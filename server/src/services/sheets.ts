@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import NodeCache from 'node-cache';
 import { parse, isValid } from 'date-fns';
 import type { ActivityItem, Copy, HistorialEntry, Lead, LeadSource, LeadStatus, RentalType, UserRole } from '../types/index.js';
+import { sameLeadStatus } from '../utils/statuses.js';
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -244,7 +245,7 @@ export async function getLeads(filters?: {
   let leads = rows.map((r) => mapRowToLead(r, 'idag'));
 
   if (filters?.status) {
-    leads = leads.filter((l) => l.estado === filters.status);
+    leads = leads.filter((l) => sameLeadStatus(l.estado, filters.status));
   }
   if (filters?.fuente) {
     leads = leads.filter((l) => l.fuente === filters.fuente);

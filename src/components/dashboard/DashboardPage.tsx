@@ -4,7 +4,7 @@ import { useLeadSync } from '../../hooks/useLeadSync';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
-import { STATUS_COLORS } from '../../lib/constants';
+import { getLeadStatusColor, getLeadStatusLabel, resolveLeadStatus } from '../../lib/constants';
 import { TrendingUp, Users, Target, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -85,26 +85,40 @@ export function DashboardPage() {
           <h2 className="text-sm font-semibold text-white mb-4">Pipeline de leads</h2>
           {funnel && funnel.length > 0 ? (
             <div className="space-y-2">
-              {funnel
-                .filter(f => f.count > 0)
-                .sort((a, b) => b.count - a.count)
-                .map((item) => {
-                  const max = Math.max(...funnel.map(f => f.count), 1);
-                  const pct = (item.count / max) * 100;
+              {(() => {
+                // Agrupamos por estado CANÓNICO (por si el API devolviera typos),
+                // normalizamos etiqueta/color y luego pintamos.
+                const merged = new Map<string, { label: string; color: string; count: number }>();
+                for (const f of funnel) {
+                  const key = resolveLeadStatus(f.status) ?? String(f.status);
+                  const prev = merged.get(key);
+                  merged.set(key, {
+                    label: prev?.label ?? getLeadStatusLabel(f.status),
+                    color: prev?.color ?? getLeadStatusColor(f.status),
+                    count: (prev?.count ?? 0) + (f.count ?? 0),
+                  });
+                }
+                const rows = [...merged.values()]
+                  .filter((r) => r.count > 0)
+                  .sort((a, b) => b.count - a.count);
+                const max = Math.max(...rows.map((r) => r.count), 1);
+                return rows.map((row) => {
+                  const pct = (row.count / max) * 100;
                   return (
-                    <div key={item.status} className="flex items-center gap-3">
-                      <div className="w-40 text-xs text-muted text-right shrink-0">{item.status}</div>
+                    <div key={row.label} className="flex items-center gap-3">
+                      <div className="w-40 text-xs text-muted text-right shrink-0">{row.label}</div>
                       <div className="flex-1 bg-surface-600 rounded-full h-6 overflow-hidden">
                         <div
                           className="h-full rounded-full flex items-center px-2 transition-all duration-700"
-                          style={{ width: `${pct}%`, backgroundColor: item.color + 'cc' }}
+                          style={{ width: `${pct}%`, backgroundColor: row.color + 'cc' }}
                         >
-                          <span className="text-xs font-semibold text-white">{item.count}</span>
+                          <span className="text-xs font-semibold text-white">{row.count}</span>
                         </div>
                       </div>
                     </div>
                   );
-                })}
+                });
+              })()}
             </div>
           ) : (
             <p className="text-muted text-sm">Sin datos</p>
@@ -204,7 +218,7 @@ export function DashboardPage() {
                       <p className="text-xs text-muted">{lead.provincia}</p>
                     </div>
                   </div>
-                  <Badge color={STATUS_COLORS[lead.estado]}>{lead.estado}</Badge>
+                  <Badge color={getLeadStatusColor(lead.estado)}>{getLeadStatusLabel(lead.estado)}</Badge>
                 </button>
               ))
             )}

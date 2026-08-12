@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Bell, Check, Trash2 } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { Badge } from '../ui/Badge';
-import { STATUS_COLORS } from '../../lib/constants';
+import { getLeadStatusColor, getLeadStatusLabel } from '../../lib/constants';
 import { formatRelative } from '../../lib/utils';
 
 export function NotificationDropdown() {
@@ -82,9 +82,9 @@ export function NotificationDropdown() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{n.leadName}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge color={STATUS_COLORS[n.oldStatus]}>{n.oldStatus}</Badge>
+                        <Badge color={getLeadStatusColor(n.oldStatus)}>{getLeadStatusLabel(n.oldStatus)}</Badge>
                         <span className="text-muted-dim text-xs">&rarr;</span>
-                        <Badge color={STATUS_COLORS[n.newStatus]}>{n.newStatus}</Badge>
+                        <Badge color={getLeadStatusColor(n.newStatus)}>{getLeadStatusLabel(n.newStatus)}</Badge>
                       </div>
                       <p className="text-xs text-muted-dim mt-1">
                         {formatRelative(n.timestamp)}

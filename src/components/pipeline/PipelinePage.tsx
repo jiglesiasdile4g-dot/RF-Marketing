@@ -5,7 +5,13 @@ import { useRoleGuard } from '../../hooks/useRoleGuard';
 import { useLeadSync } from '../../hooks/useLeadSync';
 import { Rating } from '../ui/Rating';
 import { Spinner } from '../ui/Spinner';
-import { STATUS_COLORS, PIPELINE_STATUSES, ROLE_STAGES } from '../../lib/constants';
+import {
+  PIPELINE_STATUSES,
+  ROLE_STAGES,
+  getLeadStatusColor,
+  getLeadStatusLabel,
+  resolveLeadStatus,
+} from '../../lib/constants';
 import type { Lead, LeadStatus } from '../../types';
 
 export function PipelinePage() {
@@ -18,8 +24,10 @@ export function PipelinePage() {
 
   const visibleStatuses = role === 'admin' ? PIPELINE_STATUSES : ROLE_STAGES[role];
 
+  // Agrupamos por estado CANÓNICO (tras normalizar typos/espacios/mayúsculas de Sheets).
+  // Así ningún lead se pierde aunque su estado venga escrito de forma irregular.
   const grouped = (leads ?? []).reduce<Record<string, Lead[]>>((acc, lead) => {
-    const s = lead.estado;
+    const s = resolveLeadStatus(lead.estado) ?? String(lead.estado || 'Sin iniciar');
     if (!acc[s]) acc[s] = [];
     acc[s].push(lead);
     return acc;
@@ -47,7 +55,8 @@ export function PipelinePage() {
         <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: '70vh' }}>
           {visibleStatuses.map((status) => {
             const cards = grouped[status] ?? [];
-            const color = STATUS_COLORS[status];
+            const color = getLeadStatusColor(status);
+            const label = getLeadStatusLabel(status);
             const canDrop = canTransitionTo(status);
 
             return (
@@ -59,7 +68,7 @@ export function PipelinePage() {
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                    <span className="text-xs font-semibold text-white">{status}</span>
+                    <span className="text-xs font-semibold text-white">{label}</span>
                   </div>
                   <span
                     className="text-xs font-bold px-2 py-0.5 rounded-lg"
@@ -100,7 +109,13 @@ export function PipelinePage() {
                               <div className="flex items-center justify-between">
                                 <span
                                   className="text-[10px] px-2 py-0.5 rounded-md font-medium"
-                                  style={{ backgroundColor: `${STATUS_COLORS[lead.fuente === 'Idealista' ? 'Cliente cerrado' : 'Sin iniciar']}15`, color: 'rgba(255,255,255,0.5)' }}
+                                  style={{
+                                    backgroundColor:
+                                      lead.fuente === 'Idealista'
+                                        ? `${getLeadStatusColor('Cliente cerrado')}15`
+                                        : `${getLeadStatusColor('Sin iniciar')}15`,
+                                    color: 'rgba(255,255,255,0.5)',
+                                  }}
                                 >
                                   {lead.fuente || 'Otro'}
                                 </span>

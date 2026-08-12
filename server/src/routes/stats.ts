@@ -1,22 +1,16 @@
 import { Router } from 'express';
 import { getLeads } from '../services/sheets.js';
 import type { LeadStatus } from '../types/index.js';
+import {
+  LEAD_STATUSES,
+  isTerminalLeadStatus,
+  normalizeLeadStatusKey,
+  resolveLeadStatus,
+} from '../utils/statuses.js';
 
 const router = Router();
 
-const PIPELINE_ORDER: LeadStatus[] = [
-  'Sin iniciar',
-  'Contactado',
-  'Contactado 1',
-  'Contactado 2',
-  'Responde',
-  'No responde',
-  'Llamada breve agendada',
-  'Reunión agendada',
-  'Demo realizada',
-  'Cliente cerrado',
-  'No interesado',
-];
+const PIPELINE_ORDER: LeadStatus[] = LEAD_STATUSES;
 
 const STATUS_COLORS: Record<LeadStatus, string> = {
   'Sin iniciar': '#6b7280',
@@ -39,13 +33,14 @@ router.get('/kpis', async (_req, res) => {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
+    // Agrupamos por estado CANÓNICO para unificar strings con typos/espacios/tildes.
     const byStatus: Record<string, number> = {};
     let leadsThisWeek = 0;
     let leadsLastWeek = 0;
-    const terminalStates: LeadStatus[] = ['Cliente cerrado', 'No interesado'];
 
     for (const lead of leads) {
-      byStatus[lead.estado] = (byStatus[lead.estado] || 0) + 1;
+      const canonicalKey = normalizeLeadStatusKey(lead.estado);
+      byStatus[canonicalKey] = (byStatus[canonicalKey] || 0) + 1;
 
       if (lead.validado) {
         const d = new Date(lead.validado);
@@ -56,7 +51,7 @@ router.get('/kpis', async (_req, res) => {
 
     const closed = byStatus['Cliente cerrado'] || 0;
     const total = leads.length;
-    const activePipeline = leads.filter((l) => !terminalStates.includes(l.estado)).length;
+    const activePipeline = leads.filter((l) => !isTerminalLeadStatus(l.estado)).length;
 
     res.json({
       totalLeads: total,
@@ -78,7 +73,8 @@ router.get('/funnel', async (_req, res) => {
     const byStatus: Record<string, number> = {};
 
     for (const lead of leads) {
-      byStatus[lead.estado] = (byStatus[lead.estado] || 0) + 1;
+      const canonicalKey = normalizeLeadStatusKey(lead.estado);
+      byStatus[canonicalKey] = (byStatus[canonicalKey] || 0) + 1;
     }
 
     const funnel = PIPELINE_ORDER.map((status) => ({
